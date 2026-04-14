@@ -11,25 +11,25 @@
   />
   <meta
     name="keywords"
-    content="Guardian SOS, seguridad personal, app de emergencia, alerta SOS, protección personal, geolocalización, WhatsApp emergencia, ayuda inmediata"
+    content="Guardian SOS, seguridad personal, app de emergencia, alerta SOS, protección para mujeres, geolocalización, WhatsApp emergencia, ayuda inmediata"
   />
   <meta name="author" content="Abner Maldonado · Demodex Games" />
-  <meta name="theme-color" content="#8b3dff" />
 
   <!-- PWA -->
-  <link rel="manifest" href="./manifest.json" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Guardian SOS" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Guardian SOS · Protección Personal" />
   <meta property="og:description" content="Aplicación de protección personal diseñada para brindar asistencia inmediata en situaciones de riesgo mediante geolocalización, WhatsApp, SMS y llamada rápida." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="./icons/icon-512.png" />
+  <meta property="og:image" content="icons/icon-512.png" />
 
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -49,10 +49,12 @@
       </div>
     </header>
 
+    <!-- Aviso si se abre en PC -->
     <section id="desktopWarning" class="desktop-warning hidden">
       <p>📱 Guardian SOS está optimizada para teléfonos móviles. Para una mejor experiencia, úsala desde tu celular.</p>
     </section>
 
+    <!-- BANNER DE CONFIGURACIÓN -->
     <section id="setupBanner" class="setup-banner hidden">
       <div class="setup-text">
         <strong>⚠️ Configuración pendiente</strong>
@@ -73,17 +75,11 @@
         </div>
       </section>
 
-      <!-- BOTÓN DE INSTALACIÓN TIPO LESHO -->
+      <!-- BOTÓN INSTALAR APP (como la segunda imagen) -->
       <button id="installBtn" class="install-btn hidden">📲 Instalar Guardian SOS</button>
 
-      <!-- GUÍA ANDROID -->
-      <section id="androidInstallTip" class="install-tip hidden">
-        <strong>📱 Android</strong>
-        <p>Si no aparece la instalación automática, abre el menú <b>⋮</b> de Chrome y toca <b>Instalar app</b> o <b>Añadir a pantalla principal</b>.</p>
-      </section>
-
-      <!-- GUÍA IPHONE -->
-      <section id="iosInstallTip" class="install-tip hidden">
+      <!-- AYUDA PARA iPhone -->
+      <section id="iosInstallTip" class="ios-tip hidden">
         <strong>📱 iPhone / iPad</strong>
         <p>Toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b> para instalar la app.</p>
       </section>
@@ -94,6 +90,13 @@
           <span class="sos-main">SOS</span>
           <span class="sos-sub" id="sosSubText">Mantén 1 segundo</span>
         </button>
+      </section>
+
+      <!-- Compatibilidad -->
+      <section id="countdownPanel" class="countdown-panel hidden" aria-hidden="true">
+        <div class="countdown-label">🚨 Enviando alerta...</div>
+        <div id="countdownNumber" class="countdown-number">0</div>
+        <button id="cancelBtn" class="cancel-btn">❌ Cancelar</button>
       </section>
 
       <section class="quick-panel">
@@ -138,11 +141,11 @@
     </footer>
   </div>
 
-  <!-- MODAL AJUSTES -->
+  <!-- MODAL AJUSTES / ONBOARDING -->
   <div id="settingsModal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>⚙️ Ajustes rápidos</h2>
+        <h2 id="modalTitle">⚙️ Ajustes rápidos</h2>
         <button id="closeSettingsBtn" class="mini-btn" aria-label="Cerrar">✖</button>
       </div>
 
@@ -188,6 +191,6 @@
 
   <div id="toast" class="toast">Mensaje</div>
 
-  <script src="./app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // =======================
-// GUARDIAN SOS - PWA REBUILD TIPO LESHO
+// GUARDIAN SOS - FINAL DEFINITIVO MÓVIL
 // =======================
 
 // ---------- ELEMENTOS ----------
@@ -35,9 +35,13 @@ const callContactInput = document.getElementById("callContact");
 const customMessageInput = document.getElementById("customMessage");
 
 const installBtn = document.getElementById("installBtn");
-const androidInstallTip = document.getElementById("androidInstallTip");
 const iosInstallTip = document.getElementById("iosInstallTip");
 const desktopWarning = document.getElementById("desktopWarning");
+
+// Compatibilidad con elementos que aún existen
+const countdownPanel = document.getElementById("countdownPanel");
+const countdownNumber = document.getElementById("countdownNumber");
+const cancelBtn = document.getElementById("cancelBtn");
 
 // ---------- ESTADO ----------
 let deferredPrompt = null;
@@ -45,16 +49,16 @@ let isSilentMode = false;
 let currentLocation = null;
 let watchId = null;
 let holdTimer = null;
+let holdTriggered = false;
 
 const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|webOS/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-const isAndroid = /Android/i.test(navigator.userAgent);
 
-// ---------- STORAGE ----------
+// ---------- STORAGE KEYS ----------
 const STORAGE_KEYS = {
-  settings: "guardian_sos_settings_v2",
-  theme: "guardian_sos_theme_v2",
-  silent: "guardian_sos_silent_v2"
+  settings: "guardian_sos_settings_v1",
+  theme: "guardian_sos_theme_v1",
+  silent: "guardian_sos_silent_v1"
 };
 
 // ---------- HELPERS ----------
@@ -64,7 +68,7 @@ function showToast(message = "Acción completada") {
   toast.classList.add("show");
   setTimeout(() => {
     toast.classList.remove("show");
-  }, 2600);
+  }, 2200);
 }
 
 function sanitizePhone(value = "") {
@@ -86,7 +90,16 @@ function saveSettings(data) {
 }
 
 function hasValidSetup(settings) {
-  return !!(settings && settings.contact1 && settings.callContact);
+  if (!settings) return false;
+  return !!(settings.contact1 && settings.callContact);
+}
+
+function updatePreview() {
+  const settings = collectFormData();
+  const message = buildEmergencyMessage(settings, currentLocation);
+  if (messagePreview) {
+    messagePreview.textContent = message;
+  }
 }
 
 function collectFormData() {
@@ -96,6 +109,19 @@ function collectFormData() {
     callContact: sanitizePhone(callContactInput?.value || ""),
     customMessage: (customMessageInput?.value || "").trim()
   };
+}
+
+function populateForm(settings) {
+  if (!settings) return;
+  if (contact1Input) contact1Input.value = settings.contact1 || "";
+  if (contact2Input) contact2Input.value = settings.contact2 || "";
+  if (callContactInput) callContactInput.value = settings.callContact || "";
+  if (customMessageInput) {
+    customMessageInput.value =
+      settings.customMessage ||
+      "🚨 ALERTA DE EMERGENCIA: Estoy en una situación de riesgo y necesito ayuda inmediata.";
+  }
+  updatePreview();
 }
 
 function buildEmergencyMessage(settings, location) {
@@ -109,28 +135,6 @@ function buildEmergencyMessage(settings, location) {
   }
 
   return `${base}\n\n📍 No se pudo obtener ubicación exacta en este momento.`;
-}
-
-function updatePreview() {
-  const settings = collectFormData();
-  if (messagePreview) {
-    messagePreview.textContent = buildEmergencyMessage(settings, currentLocation);
-  }
-}
-
-function populateForm(settings) {
-  if (!settings) return;
-
-  if (contact1Input) contact1Input.value = settings.contact1 || "";
-  if (contact2Input) contact2Input.value = settings.contact2 || "";
-  if (callContactInput) callContactInput.value = settings.callContact || "";
-  if (customMessageInput) {
-    customMessageInput.value =
-      settings.customMessage ||
-      "🚨 ALERTA DE EMERGENCIA: Estoy en una situación de riesgo y necesito ayuda inmediata.";
-  }
-
-  updatePreview();
 }
 
 function setButtonsState(enabled) {
@@ -176,7 +180,8 @@ function initTheme() {
 
 if (themeToggle) {
   themeToggle.addEventListener("click", () => {
-    const next = body.classList.contains("light") ? "dark" : "light";
+    const isLight = body.classList.contains("light");
+    const next = isLight ? "dark" : "light";
     localStorage.setItem(STORAGE_KEYS.theme, next);
     applyTheme(next);
   });
@@ -208,6 +213,7 @@ if (silentToggle) {
 function openSettings(showOnboarding = false) {
   if (!settingsModal) return;
   settingsModal.classList.remove("hidden");
+
   if (onboardingNote) {
     onboardingNote.classList.toggle("hidden", !showOnboarding);
   }
@@ -218,9 +224,17 @@ function closeSettings() {
   settingsModal.classList.add("hidden");
 }
 
-if (settingsBtn) settingsBtn.addEventListener("click", () => openSettings(false));
-if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", closeSettings);
-if (setupNowBtn) setupNowBtn.addEventListener("click", () => openSettings(true));
+if (settingsBtn) {
+  settingsBtn.addEventListener("click", () => openSettings(false));
+}
+
+if (closeSettingsBtn) {
+  closeSettingsBtn.addEventListener("click", closeSettings);
+}
+
+if (setupNowBtn) {
+  setupNowBtn.addEventListener("click", () => openSettings(true));
+}
 
 if (settingsModal) {
   settingsModal.addEventListener("click", (e) => {
@@ -253,7 +267,9 @@ if (settingsForm) {
 
 // ---------- GEOLOCALIZACIÓN ----------
 function updateLocationUI(text) {
-  if (locationText) locationText.textContent = text;
+  if (locationText) {
+    locationText.textContent = text;
+  }
 }
 
 function handleLocationSuccess(position) {
@@ -261,14 +277,13 @@ function handleLocationSuccess(position) {
   const lng = Number(position.coords.longitude).toFixed(6);
 
   currentLocation = { lat, lng };
+
   updateLocationUI(`Lat: ${lat}, Lng: ${lng}`);
-  updatePreview();
 }
 
 function handleLocationError() {
   currentLocation = null;
   updateLocationUI("No se pudo obtener la ubicación en este momento.");
-  updatePreview();
 }
 
 function requestLocation() {
@@ -308,7 +323,7 @@ function startLocationWatch() {
   );
 }
 
-// ---------- ACCIONES ----------
+// ---------- ACCIONES RÁPIDAS ----------
 function openCall() {
   const settings = getSettings();
   if (!hasValidSetup(settings)) {
@@ -342,7 +357,9 @@ function openSMS() {
     return;
   }
 
-  const separator = isIOS ? "&" : "?";
+  const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const separator = isIOSDevice ? "&" : "?";
+
   window.location.href = `sms:${number}${separator}body=${encodeURIComponent(message)}`;
 }
 
@@ -362,14 +379,16 @@ function openWhatsApp() {
     return;
   }
 
-  window.location.href = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  // Mantener como está: abrir WhatsApp del teléfono / web según dispositivo
+  const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  window.location.href = waUrl;
 }
 
 if (callBtn) callBtn.addEventListener("click", openCall);
 if (smsBtn) smsBtn.addEventListener("click", openSMS);
 if (waBtn) waBtn.addEventListener("click", openWhatsApp);
 
-// ---------- SOS ----------
+// ---------- BOTÓN SOS (mantener 1 segundo) ----------
 function triggerSOS() {
   const settings = getSettings();
 
@@ -390,15 +409,17 @@ function triggerSOS() {
     setTimeout(() => {
       if (sosSubText) sosSubText.textContent = "Mantén 1 segundo";
     }, 1500);
-  }, 700);
+  }, 800);
 }
 
 function startHold() {
   if (sosBtn?.disabled) return;
 
-  sosBtn.classList.add("holding");
+  holdTriggered = false;
+  sosBtn?.classList.add("holding");
 
   holdTimer = setTimeout(() => {
+    holdTriggered = true;
     triggerSOS();
   }, 1000);
 }
@@ -426,110 +447,86 @@ if (sosBtn) {
   sosBtn.addEventListener("touchcancel", endHold);
 }
 
-// ---------- PWA TIPO LESHO ----------
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    if (countdownPanel) countdownPanel.classList.add("hidden");
+    if (sosSubText) sosSubText.textContent = "Mantén 1 segundo";
+    showToast("Alerta cancelada");
+  });
+}
+
+// ---------- PWA / INSTALACIÓN ----------
 function initPWA() {
-  const isStandalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true;
-
-  // PC
-  if (!isMobile) {
-    if (desktopWarning) desktopWarning.classList.remove("hidden");
-    if (installBtn) installBtn.classList.add("hidden");
-    return;
+  // Aviso desktop
+  if (!isMobile && desktopWarning) {
+    desktopWarning.classList.remove("hidden");
   }
 
-  // Ya instalada
-  if (isStandalone) {
-    if (installBtn) installBtn.classList.add("hidden");
-    return;
-  }
-
-  // iPhone
-  if (isIOS) {
-    if (installBtn) installBtn.classList.remove("hidden");
-    if (iosInstallTip) iosInstallTip.classList.remove("hidden");
-  }
-
-  // Android
-  if (isAndroid) {
-    if (installBtn) installBtn.classList.remove("hidden");
-  }
-
-  // Registrar SW
+  // Registrar Service Worker
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("./service-worker.js")
-      .then(() => {
-        console.log("SW registrado");
-      })
-      .catch((err) => {
-        console.error("Error SW:", err);
-      });
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .then(() => {
+          console.log("Service Worker registrado correctamente");
+        })
+        .catch((error) => {
+          console.error("Error al registrar Service Worker:", error);
+        });
+    });
   }
 
-  // Evento real de instalación
+  // Android / navegadores compatibles
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    if (installBtn) installBtn.classList.remove("hidden");
-
-    if (androidInstallTip) {
-      androidInstallTip.classList.add("hidden");
+    if (isMobile && installBtn) {
+      installBtn.classList.remove("hidden");
     }
-
-    console.log("Prompt de instalación disponible");
   });
 
-  // Click del botón instalar
+  // iPhone / iPad
+  window.addEventListener("load", () => {
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    if (isIOS && !isStandalone && iosInstallTip) {
+      iosInstallTip.classList.remove("hidden");
+    }
+  });
+
   if (installBtn) {
     installBtn.addEventListener("click", async () => {
-      const installed =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone === true;
-
-      if (installed) {
-        showToast("Guardian SOS ya está instalada");
-        return;
-      }
-
-      // iPhone
-      if (isIOS) {
-        showToast("En iPhone usa Compartir > Añadir a pantalla de inicio");
-        if (iosInstallTip) iosInstallTip.classList.remove("hidden");
-        return;
-      }
-
-      // Android con prompt
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-
-        const choiceResult = await deferredPrompt.userChoice;
-
-        if (choiceResult.outcome === "accepted") {
-          showToast("Instalando Guardian SOS...");
+      if (!deferredPrompt) {
+        if (isIOS) {
+          showToast("En iPhone usa Compartir > Añadir a pantalla de inicio");
         } else {
-          showToast("Instalación cancelada");
+          showToast("La instalación aún no está disponible en este navegador");
         }
-
-        deferredPrompt = null;
         return;
       }
 
-      // Android sin prompt todavía
-      if (isAndroid) {
-        showToast("Abre el menú ⋮ de Chrome y toca 'Instalar app' o 'Añadir a pantalla principal'.");
-        if (androidInstallTip) androidInstallTip.classList.remove("hidden");
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+
+      if (outcome === "accepted") {
+        showToast("Instalando Guardian SOS...");
+      } else {
+        showToast("Instalación cancelada");
       }
+
+      deferredPrompt = null;
+      installBtn.classList.add("hidden");
     });
   }
 
   window.addEventListener("appinstalled", () => {
     showToast("Guardian SOS instalada correctamente 💜");
-    if (installBtn) installBtn.classList.add("hidden");
-    if (androidInstallTip) androidInstallTip.classList.add("hidden");
-    if (iosInstallTip) iosInstallTip.classList.add("hidden");
+    if (installBtn) {
+      installBtn.classList.add("hidden");
+    }
   });
 }
 
