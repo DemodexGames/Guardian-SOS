@@ -1,6 +1,5 @@
 // =======================
-// GUARDIAN SOS - FINAL V3
-// Botón instalar siempre visible en móvil
+// GUARDIAN SOS - PWA REBUILD TIPO LESHO
 // =======================
 
 // ---------- ELEMENTOS ----------
@@ -36,12 +35,9 @@ const callContactInput = document.getElementById("callContact");
 const customMessageInput = document.getElementById("customMessage");
 
 const installBtn = document.getElementById("installBtn");
+const androidInstallTip = document.getElementById("androidInstallTip");
 const iosInstallTip = document.getElementById("iosInstallTip");
 const desktopWarning = document.getElementById("desktopWarning");
-
-// Compatibilidad
-const countdownPanel = document.getElementById("countdownPanel");
-const cancelBtn = document.getElementById("cancelBtn");
 
 // ---------- ESTADO ----------
 let deferredPrompt = null;
@@ -52,12 +48,13 @@ let holdTimer = null;
 
 const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|webOS/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isAndroid = /Android/i.test(navigator.userAgent);
 
-// ---------- STORAGE KEYS ----------
+// ---------- STORAGE ----------
 const STORAGE_KEYS = {
-  settings: "guardian_sos_settings_v1",
-  theme: "guardian_sos_theme_v1",
-  silent: "guardian_sos_silent_v1"
+  settings: "guardian_sos_settings_v2",
+  theme: "guardian_sos_theme_v2",
+  silent: "guardian_sos_silent_v2"
 };
 
 // ---------- HELPERS ----------
@@ -67,7 +64,7 @@ function showToast(message = "Acción completada") {
   toast.classList.add("show");
   setTimeout(() => {
     toast.classList.remove("show");
-  }, 2400);
+  }, 2600);
 }
 
 function sanitizePhone(value = "") {
@@ -89,8 +86,7 @@ function saveSettings(data) {
 }
 
 function hasValidSetup(settings) {
-  if (!settings) return false;
-  return !!(settings.contact1 && settings.callContact);
+  return !!(settings && settings.contact1 && settings.callContact);
 }
 
 function collectFormData() {
@@ -100,19 +96,6 @@ function collectFormData() {
     callContact: sanitizePhone(callContactInput?.value || ""),
     customMessage: (customMessageInput?.value || "").trim()
   };
-}
-
-function populateForm(settings) {
-  if (!settings) return;
-  if (contact1Input) contact1Input.value = settings.contact1 || "";
-  if (contact2Input) contact2Input.value = settings.contact2 || "";
-  if (callContactInput) callContactInput.value = settings.callContact || "";
-  if (customMessageInput) {
-    customMessageInput.value =
-      settings.customMessage ||
-      "🚨 ALERTA DE EMERGENCIA: Estoy en una situación de riesgo y necesito ayuda inmediata.";
-  }
-  updatePreview();
 }
 
 function buildEmergencyMessage(settings, location) {
@@ -130,10 +113,24 @@ function buildEmergencyMessage(settings, location) {
 
 function updatePreview() {
   const settings = collectFormData();
-  const message = buildEmergencyMessage(settings, currentLocation);
   if (messagePreview) {
-    messagePreview.textContent = message;
+    messagePreview.textContent = buildEmergencyMessage(settings, currentLocation);
   }
+}
+
+function populateForm(settings) {
+  if (!settings) return;
+
+  if (contact1Input) contact1Input.value = settings.contact1 || "";
+  if (contact2Input) contact2Input.value = settings.contact2 || "";
+  if (callContactInput) callContactInput.value = settings.callContact || "";
+  if (customMessageInput) {
+    customMessageInput.value =
+      settings.customMessage ||
+      "🚨 ALERTA DE EMERGENCIA: Estoy en una situación de riesgo y necesito ayuda inmediata.";
+  }
+
+  updatePreview();
 }
 
 function setButtonsState(enabled) {
@@ -179,8 +176,7 @@ function initTheme() {
 
 if (themeToggle) {
   themeToggle.addEventListener("click", () => {
-    const isLight = body.classList.contains("light");
-    const next = isLight ? "dark" : "light";
+    const next = body.classList.contains("light") ? "dark" : "light";
     localStorage.setItem(STORAGE_KEYS.theme, next);
     applyTheme(next);
   });
@@ -212,7 +208,6 @@ if (silentToggle) {
 function openSettings(showOnboarding = false) {
   if (!settingsModal) return;
   settingsModal.classList.remove("hidden");
-
   if (onboardingNote) {
     onboardingNote.classList.toggle("hidden", !showOnboarding);
   }
@@ -223,17 +218,9 @@ function closeSettings() {
   settingsModal.classList.add("hidden");
 }
 
-if (settingsBtn) {
-  settingsBtn.addEventListener("click", () => openSettings(false));
-}
-
-if (closeSettingsBtn) {
-  closeSettingsBtn.addEventListener("click", closeSettings);
-}
-
-if (setupNowBtn) {
-  setupNowBtn.addEventListener("click", () => openSettings(true));
-}
+if (settingsBtn) settingsBtn.addEventListener("click", () => openSettings(false));
+if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", closeSettings);
+if (setupNowBtn) setupNowBtn.addEventListener("click", () => openSettings(true));
 
 if (settingsModal) {
   settingsModal.addEventListener("click", (e) => {
@@ -266,9 +253,7 @@ if (settingsForm) {
 
 // ---------- GEOLOCALIZACIÓN ----------
 function updateLocationUI(text) {
-  if (locationText) {
-    locationText.textContent = text;
-  }
+  if (locationText) locationText.textContent = text;
 }
 
 function handleLocationSuccess(position) {
@@ -276,7 +261,6 @@ function handleLocationSuccess(position) {
   const lng = Number(position.coords.longitude).toFixed(6);
 
   currentLocation = { lat, lng };
-
   updateLocationUI(`Lat: ${lat}, Lng: ${lng}`);
   updatePreview();
 }
@@ -324,7 +308,7 @@ function startLocationWatch() {
   );
 }
 
-// ---------- ACCIONES RÁPIDAS ----------
+// ---------- ACCIONES ----------
 function openCall() {
   const settings = getSettings();
   if (!hasValidSetup(settings)) {
@@ -378,15 +362,14 @@ function openWhatsApp() {
     return;
   }
 
-  const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-  window.location.href = waUrl;
+  window.location.href = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
 if (callBtn) callBtn.addEventListener("click", openCall);
 if (smsBtn) smsBtn.addEventListener("click", openSMS);
 if (waBtn) waBtn.addEventListener("click", openWhatsApp);
 
-// ---------- BOTÓN SOS ----------
+// ---------- SOS ----------
 function triggerSOS() {
   const settings = getSettings();
 
@@ -407,13 +390,13 @@ function triggerSOS() {
     setTimeout(() => {
       if (sosSubText) sosSubText.textContent = "Mantén 1 segundo";
     }, 1500);
-  }, 800);
+  }, 700);
 }
 
 function startHold() {
   if (sosBtn?.disabled) return;
 
-  sosBtn?.classList.add("holding");
+  sosBtn.classList.add("holding");
 
   holdTimer = setTimeout(() => {
     triggerSOS();
@@ -443,57 +426,63 @@ if (sosBtn) {
   sosBtn.addEventListener("touchcancel", endHold);
 }
 
-if (cancelBtn) {
-  cancelBtn.addEventListener("click", () => {
-    if (countdownPanel) countdownPanel.classList.add("hidden");
-    if (sosSubText) sosSubText.textContent = "Mantén 1 segundo";
-    showToast("Alerta cancelada");
-  });
-}
-
-// ---------- PWA / INSTALACIÓN V3 ----------
+// ---------- PWA TIPO LESHO ----------
 function initPWA() {
   const isStandalone =
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true;
 
-  // PC: ocultar botón y mostrar aviso
+  // PC
   if (!isMobile) {
     if (desktopWarning) desktopWarning.classList.remove("hidden");
     if (installBtn) installBtn.classList.add("hidden");
+    return;
   }
 
-  // Si ya está instalada, ocultar botón
-  if (isStandalone && installBtn) {
-    installBtn.classList.add("hidden");
+  // Ya instalada
+  if (isStandalone) {
+    if (installBtn) installBtn.classList.add("hidden");
+    return;
   }
 
-  // iPhone / iPad: mostrar ayuda
-  if (isIOS && !isStandalone && iosInstallTip) {
-    iosInstallTip.classList.remove("hidden");
+  // iPhone
+  if (isIOS) {
+    if (installBtn) installBtn.classList.remove("hidden");
+    if (iosInstallTip) iosInstallTip.classList.remove("hidden");
+  }
+
+  // Android
+  if (isAndroid) {
+    if (installBtn) installBtn.classList.remove("hidden");
   }
 
   // Registrar SW
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./service-worker.js")
-        .then(() => {
-          console.log("Service Worker registrado correctamente");
-        })
-        .catch((error) => {
-          console.error("Error al registrar Service Worker:", error);
-        });
-    });
+    navigator.serviceWorker
+      .register("./service-worker.js")
+      .then(() => {
+        console.log("SW registrado");
+      })
+      .catch((err) => {
+        console.error("Error SW:", err);
+      });
   }
 
-  // Android / Chrome compatible
+  // Evento real de instalación
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    console.log("Instalación PWA disponible");
+
+    if (installBtn) installBtn.classList.remove("hidden");
+
+    if (androidInstallTip) {
+      androidInstallTip.classList.add("hidden");
+    }
+
+    console.log("Prompt de instalación disponible");
   });
 
+  // Click del botón instalar
   if (installBtn) {
     installBtn.addEventListener("click", async () => {
       const installed =
@@ -512,12 +501,13 @@ function initPWA() {
         return;
       }
 
-      // Android compatible
+      // Android con prompt
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
 
-        if (outcome === "accepted") {
+        const choiceResult = await deferredPrompt.userChoice;
+
+        if (choiceResult.outcome === "accepted") {
           showToast("Instalando Guardian SOS...");
         } else {
           showToast("Instalación cancelada");
@@ -527,14 +517,19 @@ function initPWA() {
         return;
       }
 
-      // Android pero aún no disponible
-      showToast("La instalación aún no está disponible. Usa Chrome y espera unos segundos.");
+      // Android sin prompt todavía
+      if (isAndroid) {
+        showToast("Abre el menú ⋮ de Chrome y toca 'Instalar app' o 'Añadir a pantalla principal'.");
+        if (androidInstallTip) androidInstallTip.classList.remove("hidden");
+      }
     });
   }
 
   window.addEventListener("appinstalled", () => {
     showToast("Guardian SOS instalada correctamente 💜");
     if (installBtn) installBtn.classList.add("hidden");
+    if (androidInstallTip) androidInstallTip.classList.add("hidden");
+    if (iosInstallTip) iosInstallTip.classList.add("hidden");
   });
 }
 
