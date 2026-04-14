@@ -1,5 +1,6 @@
 // =======================
-// GUARDIAN SOS - FINAL DEFINITIVO MÓVIL
+// GUARDIAN SOS - FINAL DEFINITIVO MÓVIL + PC
+// INSTALACIÓN AUTOMÁTICA SIN BOTÓN FIJO
 // =======================
 
 // ---------- ELEMENTOS ----------
@@ -34,9 +35,16 @@ const contact2Input = document.getElementById("contact2");
 const callContactInput = document.getElementById("callContact");
 const customMessageInput = document.getElementById("customMessage");
 
-const installBtn = document.getElementById("installBtn");
 const iosInstallTip = document.getElementById("iosInstallTip");
 const desktopWarning = document.getElementById("desktopWarning");
+
+// Modal instalación automática
+const installModal = document.getElementById("installModal");
+const closeInstallModalBtn = document.getElementById("closeInstallModalBtn");
+const installNowModalBtn = document.getElementById("installNowModalBtn");
+const installLaterBtn = document.getElementById("installLaterBtn");
+const iosInstallInlineTip = document.getElementById("iosInstallInlineTip");
+const desktopInstallInlineTip = document.getElementById("desktopInstallInlineTip");
 
 // Compatibilidad con elementos que aún existen
 const countdownPanel = document.getElementById("countdownPanel");
@@ -53,12 +61,14 @@ let holdTriggered = false;
 
 const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|webOS/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isDesktop = !isMobile;
 
 // ---------- STORAGE KEYS ----------
 const STORAGE_KEYS = {
   settings: "guardian_sos_settings_v1",
   theme: "guardian_sos_theme_v1",
-  silent: "guardian_sos_silent_v1"
+  silent: "guardian_sos_silent_v1",
+  installDismissed: "guardian_sos_install_dismissed_v2"
 };
 
 // ---------- HELPERS ----------
@@ -162,6 +172,38 @@ function updateSetupUI() {
   updatePreview();
 }
 
+// ---------- INSTALACIÓN / PWA HELPERS ----------
+function isRunningStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function shouldShowInstallModal() {
+  const dismissed = localStorage.getItem(STORAGE_KEYS.installDismissed) === "true";
+  return !dismissed && !isRunningStandalone();
+}
+
+function openInstallModal() {
+  if (!installModal) return;
+  installModal.classList.remove("hidden");
+}
+
+function closeInstallModal(remember = false) {
+  if (!installModal) return;
+  installModal.classList.add("hidden");
+
+  if (remember) {
+    localStorage.setItem(STORAGE_KEYS.installDismissed, "true");
+  }
+}
+
+function resetInstallHints() {
+  if (iosInstallInlineTip) iosInstallInlineTip.classList.add("hidden");
+  if (desktopInstallInlineTip) desktopInstallInlineTip.classList.add("hidden");
+}
+
 // ---------- TEMA ----------
 function applyTheme(theme) {
   if (theme === "light") {
@@ -209,7 +251,7 @@ if (silentToggle) {
   });
 }
 
-// ---------- MODAL ----------
+// ---------- MODAL AJUSTES ----------
 function openSettings(showOnboarding = false) {
   if (!settingsModal) return;
   settingsModal.classList.remove("hidden");
@@ -279,11 +321,13 @@ function handleLocationSuccess(position) {
   currentLocation = { lat, lng };
 
   updateLocationUI(`Lat: ${lat}, Lng: ${lng}`);
+  updatePreview();
 }
 
 function handleLocationError() {
   currentLocation = null;
   updateLocationUI("No se pudo obtener la ubicación en este momento.");
+  updatePreview();
 }
 
 function requestLocation() {
@@ -379,13 +423,12 @@ function openWhatsApp() {
     return;
   }
 
-  // Mantener como está: abrir WhatsApp del teléfono / web según dispositivo
   const waUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
   window.location.href = waUrl;
 }
 
 if (callBtn) callBtn.addEventListener("click", openCall);
-if (smsBtn) smsBtn.addEventListener("click", openSMS);
+if (smsBtn) callBtn && smsBtn.addEventListener("click", openSMS);
 if (waBtn) waBtn.addEventListener("click", openWhatsApp);
 
 // ---------- BOTÓN SOS (mantener 1 segundo) ----------
@@ -455,10 +498,10 @@ if (cancelBtn) {
   });
 }
 
-// ---------- PWA / INSTALACIÓN ----------
+// ---------- PWA / INSTALACIÓN AUTOMÁTICA ----------
 function initPWA() {
-  // Aviso desktop
-  if (!isMobile && desktopWarning) {
+  // Mostrar aviso en escritorio
+  if (isDesktop && desktopWarning) {
     desktopWarning.classList.remove("hidden");
   }
 
@@ -476,57 +519,103 @@ function initPWA() {
     });
   }
 
-  // Android / navegadores compatibles
+  // Eventos del modal
+  if (closeInstallModalBtn) {
+    closeInstallModalBtn.addEventListener("click", () => closeInstallModal(true));
+  }
+
+  if (installLaterBtn) {
+    installLaterBtn.addEventListener("click", () => closeInstallModal(true));
+  }
+
+  if (installModal) {
+    installModal.addEventListener("click", (e) => {
+      if (e.target === installModal) closeInstallModal(true);
+    });
+  }
+
+  // Si navegador soporta instalación real (PC/Android)
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
-    if (isMobile && installBtn) {
-      installBtn.classList.remove("hidden");
+    if (shouldShowInstallModal()) {
+      setTimeout(() => {
+        resetInstallHints();
+        openInstallModal();
+      }, 1800);
     }
   });
 
-  // iPhone / iPad
+  // Al cargar: mostrar guía especial en iPhone si no está instalada
   window.addEventListener("load", () => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      window.navigator.standalone === true;
+    const isStandalone = isRunningStandalone();
 
+    if (isIOS && !isStandalone && shouldShowInstallModal()) {
+      setTimeout(() => {
+        resetInstallHints();
+        if (iosInstallInlineTip) iosInstallInlineTip.classList.remove("hidden");
+        openInstallModal();
+      }, 1800);
+    }
+
+    // Mostrar tip global iPhone si no está instalada
     if (isIOS && !isStandalone && iosInstallTip) {
       iosInstallTip.classList.remove("hidden");
     }
   });
 
-  if (installBtn) {
-    installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) {
-        if (isIOS) {
-          showToast("En iPhone usa Compartir > Añadir a pantalla de inicio");
-        } else {
-          showToast("La instalación aún no está disponible en este navegador");
+  // Acción "Instalar ahora"
+  if (installNowModalBtn) {
+    installNowModalBtn.addEventListener("click", async () => {
+      // iPhone / iPad
+      if (isIOS) {
+        resetInstallHints();
+        if (iosInstallInlineTip) {
+          iosInstallInlineTip.classList.remove("hidden");
         }
+        showToast("En iPhone usa Compartir > Añadir a pantalla de inicio");
         return;
       }
 
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+      // PC / Android con soporte real
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
 
-      if (outcome === "accepted") {
-        showToast("Instalando Guardian SOS...");
-      } else {
-        showToast("Instalación cancelada");
+        const { outcome } = await deferredPrompt.userChoice;
+
+        if (outcome === "accepted") {
+          showToast("Instalando Guardian SOS...");
+          closeInstallModal(true);
+        } else {
+          showToast("Instalación cancelada");
+        }
+
+        deferredPrompt = null;
+        return;
       }
 
-      deferredPrompt = null;
-      installBtn.classList.add("hidden");
+      // Fallback escritorio
+      if (isDesktop) {
+        resetInstallHints();
+        if (desktopInstallInlineTip) {
+          desktopInstallInlineTip.classList.remove("hidden");
+        }
+        showToast("Usa el ícono instalar del navegador (Chrome/Edge)");
+        return;
+      }
+
+      // Fallback Android sin prompt
+      showToast("La instalación aún no está disponible en este navegador");
     });
   }
 
+  // Cuando ya se instaló
   window.addEventListener("appinstalled", () => {
     showToast("Guardian SOS instalada correctamente 💜");
-    if (installBtn) {
-      installBtn.classList.add("hidden");
-    }
+    localStorage.setItem(STORAGE_KEYS.installDismissed, "true");
+    closeInstallModal(true);
+    deferredPrompt = null;
   });
 }
 

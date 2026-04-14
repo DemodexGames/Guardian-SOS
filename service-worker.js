@@ -1,4 +1,4 @@
-const CACHE_NAME = "guardian-sos-v2";
+const CACHE_NAME = "guardian-sos-v3";
 
 const urlsToCache = [
   "./",

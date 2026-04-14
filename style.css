@@ -20,14 +20,8 @@
 
   --primary: #8b3dff;
   --primary-2: #c05cff;
-  --primary-soft: rgba(139, 61, 255, 0.14);
 
   --success: #22c55e;
-  --success-bg: rgba(34, 197, 94, 0.08);
-
-  --warning-bg: rgba(245, 158, 11, 0.12);
-  --warning-border: rgba(245, 158, 11, 0.28);
-  --warning-text: #fcd34d;
 
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
   --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.22);
@@ -50,7 +44,6 @@ body.light {
   --primary-2: #a855f7;
 
   --success: #059669;
-  --success-bg: rgba(5, 150, 105, 0.1);
 
   --shadow: 0 18px 40px rgba(30, 27, 46, 0.08);
   --shadow-soft: 0 10px 24px rgba(30, 27, 46, 0.06);
@@ -80,14 +73,14 @@ body {
 
 .topbar,
 .location-panel,
-.countdown-panel,
 .modal-card,
 .setup-banner,
 .hero-card,
 .info-card,
-.ios-tip,
+.install-tip,
 .credits-card,
-.desktop-warning {
+.desktop-warning,
+.install-banner {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -150,18 +143,75 @@ body {
   border-radius: 12px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: transform 0.18s ease, background 0.18s ease;
-}
-
-.mini-btn:hover,
-.mini-btn:active {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .main-screen {
   display: grid;
   gap: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* BANNER INSTALAR */
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background:
+    linear-gradient(135deg, rgba(139, 61, 255, 0.14), rgba(192, 92, 255, 0.08)),
+    var(--panel);
+}
+
+.install-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-banner-text strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.install-banner-text p {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.install-banner-btn {
+  border: none;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: white;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(139, 61, 255, 0.22);
+}
+
+.install-banner-close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  background: var(--panel-soft);
+  color: var(--text);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .setup-banner {
@@ -170,14 +220,14 @@ body {
   gap: 10px;
   margin-bottom: 12px;
   padding: 14px;
-  background: var(--warning-bg);
-  border: 1px solid var(--warning-border);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.28);
 }
 
 .setup-text strong {
   display: block;
   margin-bottom: 6px;
-  color: var(--warning-text);
+  color: #fcd34d;
   font-size: 0.92rem;
 }
 
@@ -209,10 +259,6 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-body.light .status-badge {
-  color: var(--success);
-}
-
 .hero-card {
   padding: 16px;
   background:
@@ -232,37 +278,19 @@ body.light .status-badge {
   font-size: 0.9rem;
 }
 
-.install-btn {
-  width: 100%;
-  border: none;
-  padding: 13px 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: white;
-  font-weight: 800;
-  font-size: 0.9rem;
-  cursor: pointer;
-  box-shadow: 0 10px 22px rgba(139, 61, 255, 0.22);
-  transition: transform 0.18s ease;
-}
-
-.install-btn:hover,
-.install-btn:active {
-  transform: translateY(-1px);
-}
-
-.ios-tip,
+.install-tip,
 .desktop-warning {
   padding: 12px 14px;
+  margin-bottom: 12px;
 }
 
-.ios-tip strong {
+.install-tip strong {
   display: block;
   margin-bottom: 6px;
   font-size: 0.9rem;
 }
 
-.ios-tip p,
+.install-tip p,
 .desktop-warning p {
   color: var(--text-soft);
   line-height: 1.45;
@@ -270,7 +298,6 @@ body.light .status-badge {
 }
 
 .desktop-warning {
-  margin-bottom: 12px;
   background: rgba(245, 158, 11, 0.1);
 }
 
@@ -278,7 +305,7 @@ body.light .status-badge {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2px 0 0;
+  padding-top: 2px;
 }
 
 .sos-btn {
@@ -300,7 +327,7 @@ body.light .status-badge {
   user-select: none;
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .sos-btn::before {
@@ -323,7 +350,6 @@ body.light .status-badge {
 
 .sos-btn.disabled {
   opacity: 0.55;
-  filter: grayscale(0.18);
   cursor: not-allowed;
 }
 
@@ -350,38 +376,6 @@ body.light .status-badge {
   font-weight: 700;
 }
 
-.countdown-panel {
-  padding: 16px;
-  text-align: center;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.countdown-label {
-  color: var(--text-soft);
-  margin-bottom: 8px;
-}
-
-.countdown-number {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #ffb4b4;
-  margin-bottom: 12px;
-}
-
-.cancel-btn {
-  width: 100%;
-  border: none;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: #334155;
-  color: white;
-  font-weight: 800;
-  cursor: pointer;
-}
-
 .quick-panel {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -401,30 +395,12 @@ body.light .status-badge {
   text-align: center;
   font-weight: 800;
   font-size: 0.86rem;
-  transition: transform 0.18s ease, border 0.18s ease;
   min-height: 88px;
   align-content: center;
 }
 
-.quick-btn:hover,
-.quick-btn:active {
-  transform: translateY(-2px);
-}
-
 .quick-btn span:first-child {
   font-size: 1.15rem;
-}
-
-.quick-btn.call:hover {
-  border-color: rgba(59, 130, 246, 0.35);
-}
-
-.quick-btn.sms:hover {
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
-.quick-btn.wa:hover {
-  border-color: rgba(16, 185, 129, 0.35);
 }
 
 .quick-btn.disabled {
@@ -575,13 +551,6 @@ textarea {
   color: var(--text);
   outline: none;
   font-size: 16px;
-  transition: border 0.18s ease, box-shadow 0.18s ease;
-}
-
-input:focus,
-textarea:focus {
-  border-color: rgba(124, 58, 237, 0.45);
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
 }
 
 .save-btn {
@@ -628,7 +597,7 @@ textarea:focus {
   transform: translateY(8px);
   transition: 0.28s ease;
   z-index: 9999;
-  max-width: min(300px, calc(100vw - 28px));
+  max-width: min(320px, calc(100vw - 28px));
   font-size: 0.86rem;
 }
 
@@ -637,11 +606,6 @@ textarea:focus {
   transform: translateY(0);
 }
 
-body.light .toast {
-  background: rgba(30, 27, 46, 0.96);
-}
-
-/* Tablets / pantallas más grandes */
 @media (min-width: 768px) {
   .app-shell {
     max-width: 460px;

@@ -51,7 +51,7 @@
 
     <!-- Aviso si se abre en PC -->
     <section id="desktopWarning" class="desktop-warning hidden">
-      <p>📱 Guardian SOS está optimizada para teléfonos móviles. Para una mejor experiencia, úsala desde tu celular.</p>
+      <p>💻 Guardian SOS también puede instalarse en PC (Chrome/Edge). Si tu navegador lo permite, te mostraremos la opción automáticamente.</p>
     </section>
 
     <!-- BANNER DE CONFIGURACIÓN -->
@@ -75,10 +75,7 @@
         </div>
       </section>
 
-      <!-- BOTÓN INSTALAR APP (como la segunda imagen) -->
-      <button id="installBtn" class="install-btn hidden">📲 Instalar Guardian SOS</button>
-
-      <!-- AYUDA PARA iPhone -->
+      <!-- AYUDA GLOBAL PARA iPhone -->
       <section id="iosInstallTip" class="ios-tip hidden">
         <strong>📱 iPhone / iPad</strong>
         <p>Toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b> para instalar la app.</p>
@@ -185,6 +182,38 @@
       <div class="preview-box">
         <h3>🧾 Vista previa</h3>
         <pre id="messagePreview">Aún no hay configuración guardada.</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL INSTALACIÓN AUTOMÁTICA -->
+  <div id="installModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📲 Instalar Guardian SOS</h2>
+        <button id="closeInstallModalBtn" class="mini-btn" aria-label="Cerrar">✖</button>
+      </div>
+
+      <div class="onboarding-note">
+        <strong>Instala la app en tu dispositivo</strong>
+        <p>
+          Podrás abrir Guardian SOS más rápido desde tu pantalla de inicio o escritorio, con una experiencia más parecida a una app real.
+        </p>
+      </div>
+
+      <div style="display:grid; gap:10px;">
+        <button id="installNowModalBtn" class="save-btn">Instalar ahora</button>
+        <button id="installLaterBtn" class="cancel-btn">Más tarde</button>
+      </div>
+
+      <div id="iosInstallInlineTip" class="ios-tip hidden" style="margin-top:12px;">
+        <strong>📱 iPhone / iPad</strong>
+        <p>Toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>.</p>
+      </div>
+
+      <div id="desktopInstallInlineTip" class="ios-tip hidden" style="margin-top:12px;">
+        <strong>💻 PC / Escritorio</strong>
+        <p>Si no aparece el instalador, usa el ícono de instalar en la barra de direcciones o el menú del navegador (Chrome/Edge).</p>
       </div>
     </div>
   </div>
