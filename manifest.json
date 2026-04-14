@@ -1,13 +1,13 @@
 {
   "name": "Guardian SOS",
   "short_name": "Guardian SOS",
-  "description": "Aplicación de protección personal y alerta rápida para situaciones de riesgo.",
+  "description": "Aplicación de protección personal diseñada para brindar asistencia inmediata en situaciones de riesgo mediante geolocalización, acceso rápido a WhatsApp, SMS y llamada de emergencia.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0614",
-  "theme_color": "#7c3aed",
+  "background_color": "#090016",
+  "theme_color": "#8b3dff",
   "lang": "es-HN",
   "icons": [
     {
