@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Guardian SOS · Protección Personal</title>
+  <meta name="description" content="Aplicación de protección personal y alerta rápida para situaciones de riesgo." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Guardian SOS" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>🛡️ Guardian SOS</h1>
+        <p>Protección personal · ayuda inmediata</p>
+      </div>
+
+      <div class="top-actions">
+        <button id="silentToggle" class="mini-btn" aria-label="Modo silencioso">🔇</button>
+        <button id="settingsBtn" class="mini-btn" aria-label="Ajustes">⚙️</button>
+        <button id="themeToggle" class="mini-btn" aria-label="Cambiar tema">🌙</button>
+      </div>
+    </header>
+
+    <!-- BANNER DE CONFIGURACIÓN -->
+    <section id="setupBanner" class="setup-banner hidden">
+      <div class="setup-text">
+        <strong>⚠️ Configuración pendiente</strong>
+        <p>Antes de usar SOS, guarda al menos tu contacto principal y el número de llamada rápida.</p>
+      </div>
+      <button id="setupNowBtn" class="setup-btn">Configurar ahora</button>
+    </section>
+
+    <main class="main-screen">
+      <div class="status-badge" id="statusBadge">🟢 Protección activa</div>
+
+      <section class="hero-card">
+        <div class="hero-text">
+          <h2>Tu alerta rápida de seguridad</h2>
+          <p>
+            Diseñada para cualquier persona, con enfoque especial en protección personal y situaciones de riesgo.
+          </p>
+        </div>
+      </section>
+
+      <!-- BOTÓN INSTALAR APP -->
+      <button id="installBtn" class="install-btn hidden">📲 Instalar Guardian SOS</button>
+
+      <!-- AYUDA PARA iPhone -->
+      <section id="iosInstallTip" class="ios-tip hidden">
+        <strong>📱 iPhone / iPad</strong>
+        <p>Toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b> para instalar la app.</p>
+      </section>
+
+      <section class="sos-section">
+        <button id="sosBtn" class="sos-btn">
+          <span class="sos-ring"></span>
+          <span class="sos-main">SOS</span>
+          <span class="sos-sub" id="sosSubText">Mantén 1 segundo</span>
+        </button>
+      </section>
+
+      <!-- Se mantiene por compatibilidad con JS, pero oculto -->
+      <section id="countdownPanel" class="countdown-panel hidden" aria-hidden="true">
+        <div class="countdown-label">🚨 Enviando alerta...</div>
+        <div id="countdownNumber" class="countdown-number">0</div>
+        <button id="cancelBtn" class="cancel-btn">❌ Cancelar</button>
+      </section>
+
+      <section class="quick-panel">
+        <button id="callBtn" class="quick-btn call">
+          <span>📞</span>
+          <span>Llamar YA</span>
+        </button>
+
+        <button id="smsBtn" class="quick-btn sms">
+          <span>💬</span>
+          <span>SMS</span>
+        </button>
+
+        <button id="waBtn" class="quick-btn wa">
+          <span>🟢</span>
+          <span>WhatsApp</span>
+        </button>
+      </section>
+
+      <section class="location-panel">
+        <h3>📍 Estado de ubicación</h3>
+        <p id="locationText">Intentando obtener ubicación automáticamente...</p>
+      </section>
+
+      <section class="info-card">
+        <h3>🛡️ Cómo funciona</h3>
+        <ul>
+          <li>Mantén presionado el botón SOS por 1 segundo.</li>
+          <li>La app intenta obtener tu ubicación automáticamente.</li>
+          <li>Se abre WhatsApp con tu alerta lista para enviar.</li>
+          <li>También puede usar SMS y llamada rápida como respaldo.</li>
+        </ul>
+      </section>
+
+      <!-- INFORMACIÓN FINAL -->
+      <section class="credits-card">
+        <p class="credits-note">Proyecto orientado a la seguridad y asistencia inmediata en situaciones de riesgo.</p>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mini-footer">
+      <p>© 2026 Demodex Games · Guardian SOS · Autor: Abner Maldonado</p>
+    </footer>
+  </div>
+
+  <!-- MODAL AJUSTES / ONBOARDING -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">⚙️ Ajustes rápidos</h2>
+        <button id="closeSettingsBtn" class="mini-btn" aria-label="Cerrar">✖</button>
+      </div>
+
+      <div id="onboardingNote" class="onboarding-note hidden">
+        <strong>🛡️ Configura tu protección en 30 segundos</strong>
+        <p>Solo necesitas guardar lo mínimo para que el botón SOS funcione correctamente.</p>
+      </div>
+
+      <form id="settingsForm" class="settings-form">
+        <div class="form-group">
+          <label>Contacto principal (WhatsApp/SMS)</label>
+          <input type="text" id="contact1" placeholder="Ej: 50499999999" required />
+        </div>
+
+        <div class="form-group">
+          <label>Contacto secundario (opcional)</label>
+          <input type="text" id="contact2" placeholder="Ej: 50499999999" />
+        </div>
+
+        <div class="form-group">
+          <label>Número de llamada rápida</label>
+          <input type="text" id="callContact" placeholder="Ej: 911 o 50499999999" required />
+        </div>
+
+        <div class="form-group">
+          <label>Mensaje SOS (opcional)</label>
+          <textarea
+            id="customMessage"
+            rows="4"
+            placeholder="🚨 ALERTA DE EMERGENCIA: Estoy en una situación de riesgo y necesito ayuda inmediata."
+          ></textarea>
+        </div>
+
+        <button type="submit" class="save-btn">Guardar y continuar</button>
+      </form>
+
+      <div class="preview-box">
+        <h3>🧾 Vista previa</h3>
+        <pre id="messagePreview">Aún no hay configuración guardada.</pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Mensaje</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
